@@ -1,0 +1,9 @@
+https://docs.expo.dev/workflow/prebuild/
+
+https://stackoverflow.com/questions/52886204/conditional-styling-in-react-native
+
+https://kylekusche.medium.com/local-images-not-rendering-in-react-native-expo-fix-f6fbc96071c5
+
+https://reactnative.dev/docs/publishing-to-app-store
+
+https://chat.stackoverflow.com/rooms/215713/discussion-on-answer-by-muhammad-numan-command-phasescriptexecution-failed-with

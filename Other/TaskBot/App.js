@@ -1,22 +1,88 @@
 import * as React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, ScrollView,TextInput,Button, Pressable, Alert} from 'react-native';
+import { StyleSheet, Text, View, Image, ScrollView,TextInput,Button, Pressable, Alert, TouchableOpacity} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-const funnyBot = require("./assets/Dancer.gif")
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import funnyBot from "./assets/Dancer.gif"
+import trash from "./assets/whitetrash.png"
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 export default function App() {
 
-  const [holder,setHolder] = React.useState(["Example Task1","Example Task2"])
+  const [holder,setHolder] = React.useState([{taskName:"Default Task"}])
   const [hold,setHold] = React.useState("")
   const [showaddTask, setshowaddTask] = React.useState(false)
+  const [indexer, setIndexer] = React.useState([]);
+  const storeUser = async (value) => {
+    try {
+      await AsyncStorage.setItem("user", JSON.stringify(value));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  async function logPromiseResult() {
+    test = await getUser()
+    console.log(test)
+    setHolder(test)
+    
+  }
+
+  const getUser = async () => {
+    try {
+      const savedUser = await AsyncStorage.getItem("user");
+      const currentUser = JSON.parse(savedUser);
+      return currentUser
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+
+
+
+
+
+  
+  React.useEffect(()=>{
+    getUser()
+    logPromiseResult()
+    
+  },[])
+  
+  React.useEffect(()=>{
+    storeUser(holder)
+  },[holder])
+
+  
+
   function logger(){
     if(hold.length>0){
-    setHolder([...holder,hold])
+    setHolder([...holder,{taskName:hold,isGreen:false}])
     setHold("")
     setshowaddTask(false)
     }
   }
   function toggle(){
     setshowaddTask(!showaddTask)
+  }
+
+
+  function indexActive(index){
+    if(!holder[index].isGreen){
+      let holderino = [...holder];
+      holderino[index].isGreen=true
+      console.log(holderino)
+      setHolder(holderino)
+    }
+
+    else if(holder[index].isGreen){
+      let holderino = [...holder];
+      holderino[index].isGreen=false
+      console.log(holderino)
+      setHolder(holderino)
+    }
+    
     
   }
 
@@ -32,13 +98,9 @@ export default function App() {
       newHolder = []
       
     }
-    console.log(newHolder + "newholder")
-    
     setHolder(newHolder.concat(holder2))
-    console.log("set")
-    
-
   }
+  
   const createTwoButtonAlert = () =>
     Alert.alert('Warning!', 'Are you sure you want to Delete All Tasks?', [
       {
@@ -75,10 +137,12 @@ export default function App() {
           
           {
             holder.map((task,index) =>
-                <View key = {index} style = {styles.task}>
-                  <Text style = {{color:"white"}}>{task}</Text>
-                  <Button key = {index} title= "Remove" color = "red" style = {{marginLeft:10}} onPress={()=>remove(index)}></Button>
-                </View>
+                <Pressable key = {index} style = {task.isGreen ? styles.taskClicked:styles.tasknotClicked}  onPress={()=>indexActive(index)}>
+                  <Text style = {{color:"white",fontSize:24}}>{task.taskName}</Text>
+                  <Pressable key = {index} title= "Remove" color = "red" style = {{marginLeft:10}} onPress={()=>remove(index)}>
+                  <Image source = {trash} style={{width:50,height:50}}></Image>
+                  </Pressable>
+                </Pressable>
             )
           }
         </ScrollView>
@@ -87,7 +151,7 @@ export default function App() {
       </View>
       
       <View style = {{marginBottom:50,flexDirection:"row", width: "100%", justifyContent:"flex-end"}}>
-      {!showaddTask&&<View  >
+      {!showaddTask&&<View>
           <Pressable style ={styles.addTask} title='' onPress={toggle}>
               <Text style= {{fontSize:40,color:"white"}}>+</Text>
           </Pressable>
@@ -105,13 +169,17 @@ const styles = StyleSheet.create({
   test:{
     height:"100%",
     backgroundColor: "#0c0749",
-    justifyContent: 'top',
+    justifyContent: 'flex-start',
     alignItems: 'center'
   },
   text:{
     fontSize:50,
     color:"white"
   },
+  taskText:{
+    fontSize:25
+  }
+  ,
   input:{
     height:40,
     width:"50%",
@@ -141,16 +209,32 @@ const styles = StyleSheet.create({
     
   },
   task:{
-    width:"90%",
+    
+    
+    
+  },
+  taskClicked:{
+    
+    width:"100%",
     justifyContent:'center',
     flexDirection:'row',
-    backgroundColor:"#072349",
     alignItems:'center',
     borderRadius:5,
     marginBottom:5,
-    justifyContent:"space-around"
-    
+    justifyContent:"space-around",
+    backgroundColor:"#85d1b4"
   },
+  tasknotClicked:{
+    backgroundColor:"#5e55c6",
+    width:"100%",
+    justifyContent:'center',
+    flexDirection:'row',
+    alignItems:'center',
+    borderRadius:5,
+    marginBottom:5,
+    justifyContent:"space-around",
+  }
+  ,
   addTask:{
     backgroundColor:"#490c07",
     borderRadius:50,
